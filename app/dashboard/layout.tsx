@@ -1,17 +1,33 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
 export default function Dashboard() {
   const router = useRouter();
   const [totalSales, setTotalSales] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  // Simulate fetching sales revenue data
+  // Function to check authentication
+  const checkAuth = () => {
+    const cookies = document.cookie.split("; ").find((row) => row.startsWith("authToken="));
+    return cookies ? true : false;
+  };
+
   useEffect(() => {
-    setTimeout(() => {
-      setTotalSales(125000); // Sample total sales data
-    }, 1000);
+    if (!checkAuth()) {
+      router.push("/login"); // Redirect to login if not authenticated
+    } else {
+      setTimeout(() => {
+        setTotalSales(125000); // Sample total sales data
+        setLoading(false);
+      }, 1000);
+    }
   }, []);
+
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center p-8">
@@ -44,6 +60,18 @@ export default function Dashboard() {
           Customer Reports
         </button>
       </div>
+
+      {/* Logout Button */}
+      <button
+        onClick={() => {
+          document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"; // Clear authToken
+          localStorage.removeItem("user");
+          router.push("/login");
+        }}
+        className="mt-8 bg-red-500 text-white px-6 py-3 rounded-lg shadow hover:bg-red-600 transition"
+      >
+        Logout
+      </button>
     </div>
   );
 }

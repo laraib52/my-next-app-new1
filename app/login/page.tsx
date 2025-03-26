@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai"; // Icons for show/hide password
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,19 +12,26 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
 
-    setTimeout(() => {
-      if (email === "admin@example.com" && password === "password123") {
-        localStorage.setItem("user", JSON.stringify({ email })); // Save user info
-        router.push("/dashboard"); // Redirect to dashboard
-      } else {
-        setError("Invalid email or password!");
-      }
-      setLoading(false);
-    }, 1000); // Simulating API delay
+    const res = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+      credentials: "include", // ✅ Ensures cookies are saved
+    });
+
+    if (res.ok) {
+      localStorage.setItem("user", JSON.stringify({ email }));
+      router.push("/dashboard");
+    } else {
+      setError("Invalid email or password!");
+    }
+
+    setLoading(false);
   };
 
   return (
